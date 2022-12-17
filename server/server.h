@@ -16,7 +16,7 @@ public:
 public:
     int Run();
     void Query(int client_socket);
-    void Order(int food_id);
+    void Order(int food_id, int nums);
 private:
     virtual void ServerFunction(int client_socket, int listening_socket);
 private:

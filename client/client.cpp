@@ -11,10 +11,6 @@ TcpClient::TcpClient(std::string server_ip, char choice_server) {
     server_port_ = (choice_server_ == 'A' || choice_server_ == 'a') ? 55000 : 54000;
 }
 
-TcpClient::~TcpClient() {
-
-}
-
 int TcpClient::Run() {
     // Create a socket
     int sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -42,7 +38,7 @@ int TcpClient::Run() {
     }
 
     std::string server_name = (choice_server_ == 'A' || choice_server_ == 'a') ? "S1" : "S2";
-    std::cout << "Successfully connected to server " + server_name << std::endl;
+    std::cout << "Successfully connect to server " + server_name << std::endl;
 
     // Do-while loop to send and receive data
     ClientFunction(sock);

@@ -11,7 +11,7 @@ class TcpClient {
 public:
     TcpClient(int server_port, std::string server_ip);
     TcpClient(std::string server_ip, char choice_server);
-    virtual ~TcpClient();
+    virtual ~TcpClient() {};
 public: 
     int Run();
 private:

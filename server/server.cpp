@@ -89,7 +89,7 @@ void TcpServer::ServerFunction(int client_socket, int listening_socket) {
         }
         if (byte_received == 0) {
             std::cout << "Client disconnected" << std::endl;
-            break;
+            break;;
         }
 
         // Echo message back to client
@@ -97,10 +97,14 @@ void TcpServer::ServerFunction(int client_socket, int listening_socket) {
     }
 }
 
+// Query all the food
 void TcpServer::Query(int client_socket) {
 
 }
 
-void TcpServer::Order(int food_id) {
-    //food_list[food_id]
+// settle the order
+void TcpServer::Order(int food_id, int nums) {
+    for (std::pair<std::string, int> food_item : food_list[food_id]) {
+        food_item.second += nums;
+    }
 }
