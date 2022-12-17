@@ -8,6 +8,9 @@
 #include <iostream>
 #include <string>
 #include <map>
+#include <sys/time.h>
+#include <sys/types.h>
+
 
 class TcpServer {
 public:
@@ -15,10 +18,12 @@ public:
     virtual ~TcpServer(){};
 public:
     int Run();
+private:
     void Query(int client_socket);
     void Order(int food_id, int nums);
-private:
-    virtual void ServerFunction(int client_socket, int listening_socket);
+    void Insert();
+    void Update();
+    void Delete();
 private:
     int server_port_;
     int listen_queue_length_;
