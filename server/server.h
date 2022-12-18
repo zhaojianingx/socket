@@ -25,7 +25,8 @@ public:
     virtual ~TcpServer(){};
 public:
     int Run();
-    //static TcpServer &Deserialize(std::string file_name);
+    static bool Deserialize(std::string file_name, std::vector<Food> &vec);
+    std::vector<Food> food_list;
 private:
     void Query(char * buf, int socket);
     void Order(char * buf, int socket);
@@ -33,13 +34,13 @@ private:
     void Update(char * buf, int socket);
     void Delete(char * buf, int socket);
     void KeepAlive(char * buf, int socket);
-    //bool Serialize(std::string file_name);
+    bool Serialize(std::string file_name);
     
 private:
     int server_port_;
     int listen_queue_length_;
     std::string ip_address_;
-    std::vector<Food> food_list;
+    
 };
 
 
