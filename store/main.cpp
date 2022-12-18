@@ -45,7 +45,7 @@ int main() {
     std::cout << "Successfully connect to server " + server_name << std::endl;
 
     // Do-while loop to send and receive data
-    char buf[1024];
+    char buf[128];
     std::string user_input;
     std::cin.get();
     do {
@@ -65,7 +65,7 @@ int main() {
                     if (send_result != -1) {
                         // Wait for response
                         memset(buf, 0, sizeof(buf));
-                        int byte_received = recv(sock, buf, 1024, 0);
+                        int byte_received = recv(sock, buf, 128, 0);
                         if (byte_received > 0) {
                             // Echo response to console
                             std::cout << std::string(buf, 0, byte_received) << std::endl;
@@ -80,7 +80,7 @@ int main() {
                 if (send_result != -1) {
                     // Wait for response
                     memset(buf, 0, sizeof(buf));
-                    int byte_received = recv(sock, buf, 1024, 0);
+                    int byte_received = recv(sock, buf, 128, 0);
                     if (byte_received > 0) {
                         // Echo response to console
                         std::cout << std::string(buf, 0, byte_received) << std::endl;
@@ -88,7 +88,7 @@ int main() {
                 }
             } else if (user_input == "update") {
                 send(sock, user_input.c_str(), user_input.size() + 1, 0);
-                std::cout << "请输入您要更新的食品id和数量" << std::endl;
+                std::cout << "请输入您要更新的食品id、名称和数量" << std::endl;
                 int id = 0, num = 0;
                 std::string name;
                 std::cin >>id >> name >> num;
@@ -98,7 +98,7 @@ int main() {
                     if (send_result != -1) {
                         // Wait for response
                         memset(buf, 0, sizeof(buf));
-                        int byte_received = recv(sock, buf, 1024, 0);
+                        int byte_received = recv(sock, buf, 128, 0);
                         if (byte_received > 0) {
                             // Echo response to console
                             std::cout << std::string(buf, 0, byte_received) << std::endl;
@@ -118,7 +118,7 @@ int main() {
                     if (send_result != -1) {
                         // Wait for response
                         memset(buf, 0, sizeof(buf));
-                        int byte_received = recv(sock, buf, 1024, 0);
+                        int byte_received = recv(sock, buf, 128, 0);
                         if (byte_received > 0) {
                             // Echo response to console
                             std::cout << std::string(buf, 0, byte_received) << std::endl;

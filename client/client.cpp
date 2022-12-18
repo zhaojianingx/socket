@@ -50,7 +50,7 @@ int TcpClient::Run() {
 }
 
 void TcpClient::ClientFunction(int connected_socket) {
-    char buf[4096];
+    char buf[128];
     std::string user_input;
     std::cin.get();
     do {
@@ -69,7 +69,7 @@ void TcpClient::ClientFunction(int connected_socket) {
                     if (send_result != -1) {
                         // Wait for response
                         memset(buf, 0, sizeof(buf));
-                        int byte_received = recv(connected_socket, buf, 4096, 0);
+                        int byte_received = recv(connected_socket, buf, 128, 0);
                         if (byte_received > 0) {
                             // Echo response to console
                             std::cout << std::string(buf, 0, byte_received) << std::endl;
@@ -84,7 +84,7 @@ void TcpClient::ClientFunction(int connected_socket) {
                 if (send_result != -1) {
                     // Wait for response
                     memset(buf, 0, sizeof(buf));
-                    int byte_received = recv(connected_socket, buf, 4096, 0);
+                    int byte_received = recv(connected_socket, buf, 128, 0);
                     if (byte_received > 0) {
                         // Echo response to console
                         std::cout << std::string(buf, 0, byte_received) << std::endl;

@@ -15,9 +15,9 @@ int TcpServer::Run() {
     int sd;
     int max_sd;
     int activity;
-    int client_socket[30];
-    int max_clients = 30;
-    char *buf = new char[1024];
+    int client_socket[3];
+    int max_clients = 3;
+    char *buf = new char[128];
 
     //initialise all client_socket[] to 0 so not checked
     for (int i = 0; i < max_clients; i++) {
@@ -127,7 +127,7 @@ int TcpServer::Run() {
             sd = client_socket[i];
               
             if (FD_ISSET(sd , &readfds)) {
-                byte_received = recv(sd, buf, 1024, 0);
+                byte_received = recv(sd, buf, 128, 0);
                 //Check if it was for closing , and also read the incoming message
                 if ((byte_received == 0)) {
                     //Somebody disconnected , get his details and print
@@ -182,7 +182,7 @@ void TcpServer::Query(char * buf, int socket) {
 
 // settle the order
 void TcpServer::Order(char * buf, int socket) {
-    int byte_received = recv(socket, buf, 1024, 0);
+    int byte_received = recv(socket, buf, 128, 0);
     std::string delimiter_char = ",";
     size_t pos = 0;
     std::string s = std::string(buf);
@@ -196,7 +196,7 @@ void TcpServer::Order(char * buf, int socket) {
     std::string error = "您输入的食品信息有误，请重新输入";
     bool flag = false;
     for (Food &food : food_list) {
-        if (id == food.food_id) {\
+        if (id == food.food_id) {
             flag = true;
             if (food.food_num >= num) {
                 food.food_num -= num;
@@ -212,7 +212,7 @@ void TcpServer::Order(char * buf, int socket) {
 }
 
 void TcpServer::Insert(char * buf, int socket) {
-    int byte_received = recv(socket, buf, 1024, 0);
+    int byte_received = recv(socket, buf, 128, 0);
     std::string delimiter_char = ",";
     size_t pos = 0;
     std::string s = std::string(buf);
@@ -229,7 +229,7 @@ void TcpServer::Insert(char * buf, int socket) {
     num = stoi(s);
     std::string success = "添加食品成功";
     std::string error = "您输入的食品信息有误，请重新输入";
-    if (name.size() > 0 && name.size() < 100 && num > 0) {
+    if (name.size() > 0 && name.size() < 20 && num > 0) {
         food_list.push_back(Food{id, name, num});
         send(socket, success.c_str(), success.size() + 1, 0);
         std::string file_name = (server_port_ == 55000) ? "A_data" : "B_data";
@@ -241,7 +241,7 @@ void TcpServer::Insert(char * buf, int socket) {
 }
 
 void TcpServer::Update(char * buf, int socket) {
-    int byte_received = recv(socket, buf, 1024, 0);
+    int byte_received = recv(socket, buf, 128, 0);
     std::string delimiter_char = ",";
     size_t pos = 0;
     std::string s = std::string(buf);
@@ -258,7 +258,7 @@ void TcpServer::Update(char * buf, int socket) {
     num = stoi(s);
     std::string success = "修改食品成功";
     std::string error = "您输入的食品信息有误，请重新输入";
-    if (name.size() > 0 && name.size() < 100 && num > 0) {
+    if (name.size() > 0 && name.size() < 20 && num > 0) {
         for (Food &food : food_list) {
             if(id == food.food_id) {
                 food.food_name = name;
@@ -274,22 +274,25 @@ void TcpServer::Update(char * buf, int socket) {
 }
 
 void TcpServer::Delete(char * buf, int socket) {
-    int byte_received = recv(socket, buf, 1024, 0);
+    int byte_received = recv(socket, buf, 128, 0);
     std::string delimiter_char = ",";
     size_t pos = 0;
-    int id = std::stoi(std::string(buf));
+    int id = std::stoi(std::string(buf, 0, byte_received));
+    std::cout << "buyte" << id << std::endl;
     std::string success = "删除食品成功";
     std::string error = "您输入的食品信息有误，请重新输入";
     bool flag = false;
-    for (auto it = food_list.begin(); it != food_list.end(); ++it) {
-        if (id == (*it).food_id) {
+    int index = 0;
+    for (int i = 0; i < food_list.size(); ++i) {
+        if (id == food_list[i].food_id) {
             flag = true;
-            food_list.erase(it);
-            send(socket, success.c_str(), success.size() + 1, 0);
-            std::string file_name = (server_port_ == 55000) ? "A_data" : "B_data";
-            Serialize(file_name);
+            index = i;
         }
     }
+    food_list.erase(food_list.begin() + index);
+    send(socket, success.c_str(), success.size() + 1, 0);
+    std::string file_name = (server_port_ == 55000) ? "A_data" : "B_data";
+    Serialize(file_name);
     if (!flag) send(socket, error.c_str(), error.size() + 1, 0);
 }
 
@@ -302,12 +305,13 @@ bool TcpServer::Serialize(std::string file_name) {
     for (Food food : food_list) {
         os -> write((char*)&food.food_id, sizeof(int));
         int len = food.food_name.size();
-        char chars[100];
+        char chars[20];
         for (int i = 0; i < len; i++) {
             chars[i] = food.food_name[i];
         }
         chars[len] = '\0';
-        os -> write(chars, sizeof(chars));
+        memset(chars + sizeof(len + 1), 0, 20 - sizeof(len + 1));
+        os -> write(chars, 20);
         os -> write((char*)&food.food_num, sizeof(int));
     }
     os -> close();
@@ -316,7 +320,7 @@ bool TcpServer::Serialize(std::string file_name) {
 }
 
 bool TcpServer::Deserialize(std::string file_name, std::vector<Food> &vec) {
-    char *buf = new char[100];
+    char *buf = new char[20];
     Food food;
     std::ifstream is(file_name);
     // int id, num;
@@ -333,13 +337,13 @@ bool TcpServer::Deserialize(std::string file_name, std::vector<Food> &vec) {
         is.read(buf, 4);
         int *tmp = (int*)buf;
         food.food_id = *tmp;
-        is.read(buf, 100);
+        is.read(buf, 20);
         food.food_name = std::string(buf);
         is.read(buf, 4);
         tmp = (int*)buf;
         food.food_num = *tmp;
         //std::cout << id << "\t" <<name << "\t" <<num << std::endl;
-        fsize -= 108;
+        fsize -= 28;
         vec.push_back(food);
     }
     delete[] buf;
