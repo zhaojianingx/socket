@@ -310,7 +310,7 @@ bool TcpServer::Serialize(std::string file_name) {
             chars[i] = food.food_name[i];
         }
         chars[len] = '\0';
-        memset(chars + sizeof(len + 1), 0, 20 - sizeof(len + 1));
+        memset(chars + len + 1, 0, 19 - len);
         os -> write(chars, 20);
         os -> write((char*)&food.food_num, sizeof(int));
     }
