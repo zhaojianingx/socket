@@ -7,10 +7,17 @@
 #include <unistd.h>
 #include <iostream>
 #include <string>
-#include <map>
+#include <vector>
 #include <sys/time.h>
 #include <sys/types.h>
+#include <fstream>
+#include <memory>
 
+struct Food {
+    int food_id;
+    std::string food_name;
+    int food_num;
+};
 
 class TcpServer {
 public:
@@ -18,17 +25,22 @@ public:
     virtual ~TcpServer(){};
 public:
     int Run();
+    //static TcpServer &Deserialize(std::string file_name);
 private:
-    void Query(int client_socket);
-    void Order(int food_id, int nums);
-    void Insert();
-    void Update();
-    void Delete();
+    void Query(char * buf, int socket);
+    void Order(char * buf, int socket);
+    void Insert(char * buf, int socket);
+    void Update(char * buf, int socket);
+    void Delete(char * buf, int socket);
+    void KeepAlive(char * buf, int socket);
+    //bool Serialize(std::string file_name);
+    
 private:
     int server_port_;
     int listen_queue_length_;
     std::string ip_address_;
-    std::map<int, std::map<std::string, int>> food_list;
+    std::vector<Food> food_list;
 };
+
 
 #endif /* !SERVER_H */

@@ -4,8 +4,14 @@
 #include <unistd.h>
 #include <string>
 #include <cstring>
+#include <vector>
 #include <iostream>
 
+struct Food {
+    int food_id;
+    std::string food_name;
+    int food_num;
+};
 
 class TcpClient {
 public:

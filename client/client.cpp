@@ -54,20 +54,48 @@ void TcpClient::ClientFunction(int connected_socket) {
     std::string user_input;
     std::cin.get();
     do {
+        std::cout << "请输入您的操作，输入list查看食品列表，输入order进行选购,输入#退出" << std::endl;
         // Prompt the user for some text
-        getline(std::cin, user_input);
+        std::cin >> user_input;
         if (user_input.size() > 0) {
-            // Send the text
-            int send_result = send(connected_socket, user_input.c_str(), user_input.size() + 1, 0);
-            if (send_result != -1) {
-                // Wait for response
-                memset(buf, 0, sizeof(buf));
-                int byte_received = recv(connected_socket, buf, 4096, 0);
-                if (byte_received > 0) {
-                    // Echo response to console
-                    std::cout << "Server: " << std::string(buf, 0, byte_received) << std::endl;
+            if (user_input == "order") {
+                send(connected_socket, user_input.c_str(), user_input.size() + 1, 0);
+                std::cout << "请输入您要购买的食品id和数量" << std::endl;
+                int id = 0, num = 0;
+                std::cin >> id >> num;
+                user_input = std::to_string(id) + "," + std::to_string(num);
+                if (id > 0 && num > 0) {
+                    int send_result = send(connected_socket, user_input.c_str(), user_input.size() + 1, 0);
+                    if (send_result != -1) {
+                        // Wait for response
+                        memset(buf, 0, sizeof(buf));
+                        int byte_received = recv(connected_socket, buf, 4096, 0);
+                        if (byte_received > 0) {
+                            // Echo response to console
+                            std::cout << std::string(buf, 0, byte_received) << std::endl;
+                        }
+                    }
+                } else {
+                    std::cout << "您的输入有误，请重新输入" << std::endl;
                 }
+            } else if (user_input == "list") {
+                // Send the text
+                int send_result = send(connected_socket, user_input.c_str(), user_input.size() + 1, 0);
+                if (send_result != -1) {
+                    // Wait for response
+                    memset(buf, 0, sizeof(buf));
+                    int byte_received = recv(connected_socket, buf, 4096, 0);
+                    if (byte_received > 0) {
+                        // Echo response to console
+                        std::cout << std::string(buf, 0, byte_received) << std::endl;
+                    }
+                }
+            } else if (user_input == "#") {
+                break;
+            } else {
+                std::cout << "您的输入有误，请重新输入" << std::endl;
             }
+            
         }
     } while (user_input.size() > 0);
 }

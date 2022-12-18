@@ -4,6 +4,8 @@ TcpServer::TcpServer(int server_port, int listen_queue_length, std::string ip_ad
     server_port_ = server_port;
     listen_queue_length_ = listen_queue_length;
     ip_address_ = ip_address.empty() ? "" : ip_address;
+    food_list.push_back(Food {1, "nw", 20});
+    food_list.push_back(Food {2, "nfdfdw", 20});
 }
 
 int TcpServer::Run() {
@@ -104,7 +106,7 @@ int TcpServer::Run() {
             }
           
             //inform user of socket number - used in send and receive commands
-            std::cout << "New connection, ip is : "  << inet_ntoa(hint.sin_addr) << ", port :" << ntohs(hint.sin_port) << std::endl;
+            std::cout << "New connection, ip is : "  << inet_ntoa(hint.sin_addr) << ", port: " << ntohs(hint.sin_port) << std::endl;
 
               
             //add new socket to array of sockets
@@ -131,7 +133,7 @@ int TcpServer::Run() {
                 if ((byte_received == 0)) {
                     //Somebody disconnected , get his details and print
                     getpeername(sd , (struct sockaddr*)&hint , (socklen_t*)&addrlen);
-                    printf("Host disconnected , ip %s , port %d \n" , inet_ntoa(hint.sin_addr) , ntohs(hint.sin_port));
+                    printf("Host disconnected , ip is %s , port: %d \n" , inet_ntoa(hint.sin_addr) , ntohs(hint.sin_port));
                     
                     //Close the socket and mark as 0 in list for reuse
                     close(sd);
@@ -140,8 +142,19 @@ int TcpServer::Run() {
                 //Echo back the message that came in
                 else
                 {
-                    
-                    send(sd, buf, byte_received + 1, 0);
+                    if (strcmp(buf, "list") == 0) {
+                        Query(buf, sd);
+                    } else if (strcmp(buf, "order") == 0) {
+                        Order(buf, sd);
+                    } else if (strcmp(buf, "insert") == 0) {
+                        Insert(buf, sd);
+                    } else if (strcmp(buf, "update") == 0) {
+                        Update(buf, sd);
+                    } else if (strcmp(buf, "Delete") == 0) {
+                        Delete(buf, sd);
+                    } else if (strcmp(buf, "#") == 0) {
+                        KeepAlive(buf, sd);
+                    }
                 }
                 
             }
@@ -151,18 +164,74 @@ int TcpServer::Run() {
     delete[] buf;
     // Close listening socket
     close(listening_socket);
-    
     return 0;
 }
 
 // Query all the food
-void TcpServer::Query(int client_socket) {
-
+void TcpServer::Query(char * buf, int socket) {
+    std::string str("id\tname\tnum\n");
+    for (int i = 0; i < food_list.size(); i++) {
+        Food food = food_list[i];
+        if (i == food_list.size() - 1) {
+            str += std::to_string(food.food_id)  + "\t" +  food.food_name + "\t" + std::to_string(food.food_num);
+        } else {
+            str += std::to_string(food.food_id)  + "\t" +  food.food_name + "\t" + std::to_string(food.food_num) + "\n";
+        }
+    }
+    send(socket, str.c_str(), str.size() + 1, 0);
 }
 
 // settle the order
-void TcpServer::Order(int food_id, int nums) {
-    for (std::pair<std::string, int> food_item : food_list[food_id]) {
-        food_item.second += nums;
+void TcpServer::Order(char * buf, int socket) {
+    int byte_received = recv(socket, buf, 4096, 0);
+    std::string delimiter_char = ",";
+    size_t pos = 0;
+    std::string s = std::string(buf);
+    int id, num;
+    if ((pos = s.find(delimiter_char)) != std::string::npos) {
+        id = stoi(s.substr(0, pos));
+        s.erase(0, pos + delimiter_char.length());
     }
+    num = stoi(s);
+    std::string success = "订单结算成功";
+    std::string error = "您输入的商品信息有误，请重新输入";
+    bool flag = false;
+    for (Food &food : food_list) {
+        if (id == food.food_id) {\
+            flag = true;
+            if (food.food_num >= num) {
+                food.food_num -= num;
+                send(socket, success.c_str(), success.size() + 1, 0);
+                std::string file_name = (server_port_ == 55000) ? "A_data" : "B_data";
+                //Serialize(file_name);
+            } else {
+                send(socket, error.c_str(), error.size() + 1, 0);
+            }
+        }
+    }
+    if (!flag) send(socket, error.c_str(), error.size() + 1, 0);
 }
+
+void TcpServer::Insert(char * buf, int socket) {
+    
+}
+
+void TcpServer::Update(char * buf, int socket) {
+    
+}
+
+void TcpServer::Delete(char * buf, int socket) {
+    
+}
+
+void TcpServer::KeepAlive(char * buf, int socket) {
+    
+}
+
+// bool TcpServer::Serialize(std::string file_name) {
+    
+// }
+
+// TcpServer& TcpServer::Deserialize(std::string file_name) {
+    
+// }
