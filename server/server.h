@@ -27,6 +27,7 @@ public:
     int Run();
     static bool Deserialize(std::string file_name, std::vector<Food> &vec);
     std::vector<Food> food_list;
+    static int HeartBeat(int port, std::string file_name);
 private:
     void Query(char * buf, int socket);
     void Order(char * buf, int socket);

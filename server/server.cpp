@@ -141,6 +141,7 @@ int TcpServer::Run() {
                 //Echo back the message that came in
                 else
                 {
+                    std::cout << std::string(buf) << std::endl;
                     if (strcmp(buf, "list") == 0) {
                         Query(buf, sd);
                     } else if (strcmp(buf, "order") == 0) {
@@ -297,7 +298,8 @@ void TcpServer::Delete(char * buf, int socket) {
 }
 
 void TcpServer::KeepAlive(char * buf, int socket) {
-    
+    std::string str = "#";
+    send(socket, str.c_str(), str.size() + 1, 0);
 }
 
 bool TcpServer::Serialize(std::string file_name) {
@@ -348,4 +350,67 @@ bool TcpServer::Deserialize(std::string file_name, std::vector<Food> &vec) {
     }
     delete[] buf;
     return true;
+}
+
+int TcpServer::HeartBeat(int port, std::string file_name) {
+    unsigned int microsecond = 1000000;
+    usleep(10 * microsecond);//sleeps for 60 second
+    
+    // Create a socket
+    int sock = socket(AF_INET, SOCK_STREAM, 0);
+    if (sock == -1) {
+        std::cerr << "Can't create a new socket" << std::endl;
+        return -1;
+    }
+
+    // Fill in a hint structure
+    sockaddr_in hint;
+    memset(&hint, 0, sizeof(sockaddr_in));
+    hint.sin_family = AF_INET;
+    hint.sin_port = htons(port);
+    std::string ip = "127.0.0.1";
+    if (inet_pton(AF_INET, ip.c_str(), &hint.sin_addr) != 1) {
+        std::cerr << "inet_pton error" << std::endl;
+        close(sock);
+        return -1;
+    }
+    
+    // Connect to server
+    if (connect(sock, (sockaddr *)&hint, sizeof(hint)) == -1) {
+        std::cerr << "Can't coonect to server" << std::endl;
+        close(sock);
+        TcpServer tcp_server(port, 30, "");
+        TcpServer::Deserialize(file_name, tcp_server.food_list);
+        tcp_server.Run();
+        //return -1;
+    }
+
+    // Do-while loop to send and receive data
+    char buf[128];
+    std::string user_input = "#";
+    do {
+        if (user_input.size() > 0) {
+            // Send the text
+            int send_result = send(sock, user_input.c_str(), user_input.size() + 1, 0);
+            if (send_result != -1) {
+                // Wait for response
+                memset(buf, 0, sizeof(buf));
+                int byte_received = recv(sock, buf, 128, 0);
+                if (byte_received > 0) {
+                    user_input = "#";
+                    unsigned int microsecond = 1000000;
+                    usleep(5 * microsecond);//sleeps for 60 second
+                } else {   
+                    TcpServer tcp_server(port, 30, "");
+                    TcpServer::Deserialize(file_name, tcp_server.food_list);
+                    tcp_server.Run();
+                }
+            } 
+        }
+    } while (user_input.size() > 0);
+
+    // Close down
+    close(sock);
+
+    return 0;
 }
