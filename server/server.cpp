@@ -141,7 +141,7 @@ int TcpServer::Run() {
                 //Echo back the message that came in
                 else
                 {
-                    std::cout << std::string(buf) << std::endl;
+                    //std::cout << std::string(buf) << std::endl;
                     if (strcmp(buf, "list") == 0) {
                         Query(buf, sd);
                     } else if (strcmp(buf, "order") == 0) {
@@ -169,7 +169,7 @@ int TcpServer::Run() {
 
 // Query all the food
 void TcpServer::Query(char * buf, int socket) {
-    std::string str("id\tname\tnum\n");
+    std::string str("id\tname\t\tnum\n");
     for (int i = 0; i < food_list.size(); i++) {
         Food food = food_list[i];
         if (i == food_list.size() - 1) {
@@ -279,7 +279,6 @@ void TcpServer::Delete(char * buf, int socket) {
     std::string delimiter_char = ",";
     size_t pos = 0;
     int id = std::stoi(std::string(buf, 0, byte_received));
-    std::cout << "buyte" << id << std::endl;
     std::string success = "删除食品成功";
     std::string error = "您输入的食品信息有误，请重新输入";
     bool flag = false;
@@ -297,10 +296,7 @@ void TcpServer::Delete(char * buf, int socket) {
     if (!flag) send(socket, error.c_str(), error.size() + 1, 0);
 }
 
-void TcpServer::KeepAlive(char * buf, int socket) {
-    std::string str = "#";
-    send(socket, str.c_str(), str.size() + 1, 0);
-}
+
 
 bool TcpServer::Serialize(std::string file_name) {
     std::ofstream *os = new std::ofstream(file_name);
@@ -352,9 +348,14 @@ bool TcpServer::Deserialize(std::string file_name, std::vector<Food> &vec) {
     return true;
 }
 
+void TcpServer::KeepAlive(char * buf, int socket) {
+    std::string str = "#";
+    send(socket, str.c_str(), str.size() + 1, 0);
+}
+
 int TcpServer::HeartBeat(int port, std::string file_name) {
     unsigned int microsecond = 1000000;
-    usleep(10 * microsecond);//sleeps for 60 second
+    usleep(10 * microsecond);//sleeps for 10 second
     
     // Create a socket
     int sock = socket(AF_INET, SOCK_STREAM, 0);

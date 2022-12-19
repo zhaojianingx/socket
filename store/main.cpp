@@ -69,6 +69,8 @@ int main() {
                         if (byte_received > 0) {
                             // Echo response to console
                             std::cout << std::string(buf, 0, byte_received) << std::endl;
+                        } else {
+                            break;
                         }
                     }
                 } else {
@@ -84,6 +86,8 @@ int main() {
                     if (byte_received > 0) {
                         // Echo response to console
                         std::cout << std::string(buf, 0, byte_received) << std::endl;
+                    } else {
+                        break;
                     }
                 }
             } else if (user_input == "update") {
@@ -102,6 +106,8 @@ int main() {
                         if (byte_received > 0) {
                             // Echo response to console
                             std::cout << std::string(buf, 0, byte_received) << std::endl;
+                        } else {
+                            break;
                         }
                     }
                 } else {
@@ -122,6 +128,8 @@ int main() {
                         if (byte_received > 0) {
                             // Echo response to console
                             std::cout << std::string(buf, 0, byte_received) << std::endl;
+                        } else {
+                            break;
                         }
                     }
                 } else {
